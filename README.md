@@ -4,10 +4,7 @@
 
 🔗 **Live demo:** https://clearask.vercel.app
 
-<p align="center">
-  <img src="<img width="955" height="937" alt="image" src="https://github.com/user-attachments/assets/4e3be5bc-2cc7-41b9-a8d4-ac4c10c735a6" />
-" alt="ClearAsk input screen with an example vague message" width="700">
-</p>
+<img width="955" height="937" alt="image" src="https://github.com/user-attachments/assets/4e3be5bc-2cc7-41b9-a8d4-ac4c10c735a6"
 
 ---
 
