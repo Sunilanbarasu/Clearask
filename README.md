@@ -5,7 +5,8 @@
 🔗 **Live demo:** https://clearask.vercel.app
 
 <p align="center">
-  <img src="screenshots/01-input.png" alt="ClearAsk input screen with an example vague message" width="700">
+  <img src="<img width="955" height="937" alt="image" src="https://github.com/user-attachments/assets/4e3be5bc-2cc7-41b9-a8d4-ac4c10c735a6" />
+" alt="ClearAsk input screen with an example vague message" width="700">
 </p>
 
 ---
@@ -46,7 +47,8 @@ Paste a confusing message and ClearAsk gives you:
 6. **Simplify mode**, which rewrites the message in plain English with the original beside it.
 
 <p align="center">
-  <img src="screenshots/02-results.png" alt="Results: clarity label, highlighted vague words with underline and icons, and the missing-information checklist" width="700">
+  <img src="<img width="940" height="1020" alt="image" src="https://github.com/user-attachments/assets/90491537-2f89-4403-801b-0c6db812e32e" />
+" alt="Results: clarity label, highlighted vague words with underline and icons, and the missing-information checklist" width="700">
 </p>
 
 ## Accessibility
