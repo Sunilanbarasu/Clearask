@@ -1,75 +1,62 @@
 # ClearAsk
 
-ClearAsk is an offline-first, accessibility-centered web application that decodes vague and ambiguous instructions (from professors, managers, clients, or group chats) into clear, structured, and actionable guidance.
+**Decode vague instructions. Know exactly what to ask.**
+
+🔗 **Live demo:** https://clearask.vercel.app
+💻 **Code:** this repository
+🏆 Built for the Taskforge hackathon
 
 ---
 
-## 1. Problem
-Vague instructions cause anxiety, wasted time, and hesitation—especially in educational and professional settings. Ambiguous terms like *"write a short essay soon"* or *"make it look professional on Friday-ish"* leave critical details unstated, making people second-guess themselves or fear asking clarifying questions.
+## The problem
 
-## 2. Persona: Arjun
-- **Background**: Arjun is an 18-year-old first-year undergraduate international student whose native language is not English.
-- **Challenge**: When his professor assigns an essay saying *"submit a short reflection of good quality soon"*, Arjun feels paralyzed. He worries that asking basic questions like *"how many words?"* or *"what date is it due?"* will make him appear unprepared or disrespectful.
-- **Goal**: Arjun needs a private, non-judgmental tool to pinpoint what specific information is missing, understand plausible interpretations of ambiguous phrasing, and obtain polite, ready-to-send messages he can comfortably send to his professor.
+Many instructions are not hard to do. They are hard to understand.
 
-## 3. How It Works
-ClearAsk processes messages client-side using deterministic linguistic analysis:
-1. **Vague Word Detection**: Scans the input against an extensive dictionary of ambiguous time, quantity, quality, scope, and hedging phrases.
-2. **Missing Information Audit**: Checks whether key requirements (deadline, length, format, audience, criteria, submission method, and contact person) are present or missing.
-3. **Clarity Scoring**: Assigns an overall clarity badge (*Clear*, *Partly clear*, or *Mostly unclear*) based on detected ambiguities and missing details.
-4. **Clarifying Question Generation**: Generates 3 to 5 polite, ranked questions explaining why each question matters.
-5. **Ready-to-Send Replies**: Produces editable messages in multiple tones (formal email, friendly chat, or concise message) with one-click copy and text-to-speech.
-6. **Safe Assumptions Plan**: Proposes sensible default actions if the sender cannot be reached in time.
+> "Do a short presentation on something relevant, make it good, we'll see Friday-ish."
 
-## 4. Features
-- **Deterministic Offline Analysis**: Analyzes text locally in the browser with zero external network dependencies.
-- **Example Presets**: One-click example messages for Professor, Manager, Group chat, and Client scenarios.
-- **Interactive Highlight Viewer**: Highlights vague words with distinct visual and accessible indicators.
-- **Missing Info Checklist**: Visual and screen-reader accessible breakdown of missing vs. provided details.
-- **Tone Tabs & Message Writer**: Tailored ready-to-copy replies in Formal, Friendly, and Short formats.
-- **Safe Assumptions Generator**: Practical fallback recommendations when deadlines approach.
-- **Simplify Mode**: Rewrites verbose instructions into direct, plain English with optional side-by-side view.
-- **History Panel**: LocalStorage history management with full JSON export and import capabilities.
-- **Optional AI Enhancement**: Optional OpenAI API key support for alternative generative simplifications.
+Most people lose hours guessing what this means, or do the wrong thing. For many people the real barrier is not the task but the fear of asking: non-native English speakers, first-year students, and autistic or anxious people who worry about looking incompetent for asking questions. ClearAsk targets this confusing handoff, the step before the work starts.
 
-## 5. Accessibility Features
-- **WCAG AA Compliance**: High-contrast ratios and minimum 44px touch targets across all interactive controls.
-- **Focus Indicators**: High-visibility focus rings (`outline: 3px solid #f59e0b`) on all keyboard-navigable elements.
-- **Skip Links & Landmarks**: Semantic HTML5 landmark structure (`header`, `main`, `footer`, `dialog`, `toolbar`) with a dedicated skip link.
-- **Theming & Dyslexia Support**: Light, Dark, High-Contrast, and Calm themes, plus OpenDyslexic font toggle.
-- **Adjustable Display**: User-controlled font size scaling (80%–150%) and line height adjustment (1.0–2.0).
-- **Reduced Motion Support**: Respects system preferences and includes an in-app toggle to disable transitions.
-- **Screen Reader Announcements**: Dedicated ARIA live regions announce actions, status changes, and example loads.
-- **Text-to-Speech & Voice Input**: Integrated Web Speech API for voice dictation and reading results aloud.
+## Who it is for
 
-## 6. Run Instructions
-ClearAsk runs entirely in modern browsers with standard ES modules. No build steps or package installations are required.
+**Arjun**, a first-year student and non-native English speaker. His professor posts a vague assignment. He does not want to look unprepared by asking, so he guesses. ClearAsk gives him the exact questions to ask and the words to ask them.
+
+## What it does
+
+Paste a confusing message and ClearAsk:
+
+1. **Highlights vague words** (for example "short", "relevant", "Friday-ish") with an underline and an icon, never color alone. Click one for an explanation.
+2. **Checks for missing information:** deadline, length, format, audience, grading criteria, submission method and contact person.
+3. **Gives a clarity label in words** (Mostly unclear, Partly clear, Clear) instead of a harsh score.
+4. **Writes 3 to 5 polite clarifying questions**, ranked by importance, each with a "why this matters" line.
+5. **Drafts a ready-to-send message** in three tones: formal email, friendly chat, very short. Editable, with a Copy button.
+6. **Offers a safe-assumptions plan** so the user can start working if nobody replies.
+7. **Simplify mode** rewrites the message in plain English, with the original shown side by side.
+
+## Accessibility
+
+- Fully keyboard operable, with a skip link and visible focus rings
+- Settings: dyslexia-friendly font, font size, line spacing, themes (including light and dark) and reduced motion
+- Highlights use underline and icon, not color alone
+- Text-to-speech for results
+- Semantic HTML, ARIA live region for results, large touch targets, mobile-friendly layout
+- No login, no account, and it works with no API key
+
+## How it works
+
+ClearAsk uses a **rule-based analyzer** that runs entirely in the browser. It has a vague-word dictionary and pattern checks for dates, lengths, formats and other details. Nothing is sent to a server, and no data leaves the device. History is stored only in the browser's local storage.
+
+## Run it locally
+
+No build step.
 
 ```bash
-# Navigate to the project directory
+git clone https://github.com/YOUR-USERNAME/clearask.git
 cd clearask
-
-# Start a local static HTTP server
 python -m http.server 8000
-
-# Open in your browser
-# http://localhost:8000
-# Run automated tests:
-# http://localhost:8000/test.html
 ```
 
-## 7. Limitations
-- **Rule-Based Engine**: Relies on curated regex patterns and linguistic templates. Highly nuanced or colloquial slang outside the dictionary may not trigger flags.
-- **Language**: English language only.
-- **Not a Human Replacement**: Intended to empower the user to ask the right questions—not to make unilateral decisions for high-stakes assignments without confirmation.
+Open http://localhost:8000. The app uses ES modules, so it needs a local server and will not work by double-clicking `index.html`.
 
-## 8. What I Learned
-- Building accessible UIs requires redundancy: relying on color alone fails accessibility; pairing color with icons, text labels, and ARIA attributes ensures clarity for all users.
-- Deterministic rule-based engines provide lightning-fast, zero-cost, privacy-preserving utility without requiring cloud AI for everyday language breakdown tasks.
-- Semantic HTML and keyboard navigation must be prioritized from day one, not retrofitted.
+To run the tests, open http://localhost:8000/test.html (13 tests for the analyzer).
 
-## 9. AI Assistance Disclosure
-Built with Antigravity and Gemini. All code, tests, styles, and documentation were generated and verified during this pair programming session with no pre-existing code.
-
-## 10. Live Demo
-*Live demo placeholder: Coming soon on GitHub Pages.*
+## Project structure
