@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearAsk Analyzer Tests</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 720px; margin: 30px auto; padding: 20px; background: #f8fafc; color: #1e293b; }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    .summary { font-size: 1.2rem; font-weight: bold; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; }
+    .summary.all-pass { background: #dcfce7; color: #15803d; }
+    .summary.has-fail { background: #fee2e2; color: #b91c1c; }
+    .test-list { list-style: none; padding: 0; }
+    .test-item { padding: 10px 14px; margin-bottom: 8px; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .test-pass { border-left: 4px solid #22c55e; }
+    .test-fail { border-left: 4px solid #ef4444; }
+    .badge-pass { color: #16a34a; font-weight: bold; }
+    .badge-fail { color: #dc2626; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>ClearAsk Analyzer Test Suite</h1>
+  <div id="summary" class="summary">Running tests…</div>
+  <ul id="test-results" class="test-list"></ul>
+
+  <script type="module">
+    import { analyze } from "./js/analyzer.js";
+
+    const results = [];
+
+    function test(name, fn) {
+      try {
+        const passed = fn();
+        results.push({ name, passed: Boolean(passed), error: null });
+      } catch (err) {
+        results.push({ name, passed: false, error: err.message });
+      }
+    }
+
+    // 1. Vague word "soon" is detected
+    test('Vague word "soon" is detected', () => {
+      const res = analyze("Please send this soon.");
+      return res && res.vagueMatches.some(m => m.word.toLowerCase() === "soon");
+    });
+
+    // 2. Vague word "short" is detected
+    test('Vague word "short" is detected', () => {
+      const res = analyze("Write a short document for the team.");
+      return res && res.vagueMatches.some(m => m.word.toLowerCase() === "short");
+    });
+
+    // 3. Vague word "good" is detected
+    test('Vague word "good" is detected', () => {
+      const res = analyze("It should be of good quality.");
+      return res && res.vagueMatches.some(m => m.label === "good" || m.word.toLowerCase().includes("good"));
+    });
+
+    // 4. Missing deadline is flagged
+    test("Deadline missing is detected when absent", () => {
+      const res = analyze("Write a report for the client.");
+      const deadline = res.missingInfo.find(i => i.id === "deadline");
+      return deadline && !deadline.found;
+    });
+
+    // 5. Present deadline is detected
+    test("Deadline present is detected when provided", () => {
+      const res = analyze("Please submit the report by Friday at 5pm.");
+      const deadline = res.missingInfo.find(i => i.id === "deadline");
+      return deadline && deadline.found;
+    });
+
+    // 6. Missing length is flagged
+    test("Length missing is detected when absent", () => {
+      const res = analyze("Please submit your essay soon.");
+      const len = res.missingInfo.find(i => i.id === "length");
+      return len && !len.found;
+    });
+
+    // 7. Present length is detected
+    test("Length present is detected when provided", () => {
+      const res = analyze("Submit a 500 words summary.");
+      const len = res.missingInfo.find(i => i.id === "length");
+      return len && len.found;
+    });
+
+    // 8. Missing format is flagged
+    test("Format missing is detected when absent", () => {
+      const res = analyze("Send over the notes soon.");
+      const fmt = res.missingInfo.find(i => i.id === "format");
+      return fmt && !fmt.found;
+    });
+
+    // 9. Present format is detected
+    test("Format present is detected when provided", () => {
+      const res = analyze("Upload the assignment as a PDF file.");
+      const fmt = res.missingInfo.find(i => i.id === "format");
+      return fmt && fmt.found;
+    });
+
+    // 10. Vague message is labelled Mostly unclear
+    test('Vague message is labelled "Mostly unclear"', () => {
+      const res = analyze("Please write a short essay about a relevant topic soon. Make it good quality.");
+      return res && res.clarityLabel === "Mostly unclear";
+    });
+
+    // 11. Empty input does not crash
+    test("Empty input does not crash and returns null", () => {
+      const res1 = analyze("");
+      const res2 = analyze(null);
+      return res1 === null && res2 === null;
+    });
+
+    // 12. Whitespace-only input does not crash
+    test("Whitespace-only input does not crash and returns null", () => {
+      const res = analyze("     \n\t   ");
+      return res === null;
+    });
+
+    // 13. 10,000-character input does not crash
+    test("10,000-character input does not crash", () => {
+      const longText = "Please write a short report soon. ".repeat(300);
+      const res = analyze(longText);
+      return res && res.vagueMatches.length > 0;
+    });
+
+    // Render results
+    const listEl = document.getElementById("test-results");
+    const summaryEl = document.getElementById("summary");
+    let passedCount = 0;
+
+    results.forEach(r => {
+      if (r.passed) passedCount++;
+      const li = document.createElement("li");
+      li.className = "test-item " + (r.passed ? "test-pass" : "test-fail");
+      li.innerHTML = `<span>${r.name}</span> <span class="${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? '✅ PASS' : '❌ FAIL'}</span>`;
+      listEl.appendChild(li);
+    });
+
+    const total = results.length;
+    const allPassed = passedCount === total;
+    summaryEl.className = "summary " + (allPassed ? "all-pass" : "has-fail");
+    summaryEl.textContent = `Summary: ${passedCount}/${total} tests passed (${allPassed ? 'ALL PASS ✅' : 'FAILURES DETECTED ❌'})`;
+  </script>
+</body>
+</html>

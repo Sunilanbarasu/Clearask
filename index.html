@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearAsk – Decode Vague Instructions</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Ensure 44px touch targets for important buttons if not covered by CSS */
+    .touch-target { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+  <!-- Skip link for keyboard users -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="app-header" role="banner">
+    <h1>ClearAsk</h1>
+    <p>Make vague messages clear and actionable.</p>
+    <div class="header-actions" role="toolbar" aria-label="Global actions">
+      <button id="settings-btn" class="touch-target" aria-label="Open settings" title="Open settings (S)" type="button">⚙️ Settings</button>
+      <button id="history-btn" class="touch-target" aria-label="Open history" title="Open history (H)" type="button">🕘 History</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="app" role="main">
+    <!-- Input Screen -->
+    <section id="input-screen" class="screen" aria-labelledby="input-screen-title" tabindex="-1">
+      <h2 id="input-screen-title">Enter Message</h2>
+      <label for="message-input" class="visually-hidden">Message to decode</label>
+      <textarea id="message-input" class="touch-target" rows="6" placeholder="Paste or type your message here..." aria-describedby="char-count"></textarea>
+      <div id="char-count" class="char-count" aria-live="polite">0 characters</div>
+
+      <label for="sender-type" class="visually-hidden">Sender type</label>
+      <select id="sender-type" class="touch-target" aria-label="Sender type">
+        <option value="teacher" selected>Professor</option>
+        <option value="manager">Manager</option>
+        <option value="group">Group chat</option>
+        <option value="client">Client</option>
+      </select>
+
+      <div class="input-actions">
+        <button id="voice-input-btn" class="touch-target" aria-label="Voice input" title="Voice input (V)">🎤 Voice input</button>
+        <button id="decode-btn" class="touch-target" aria-label="Decode it" title="Decode it (Enter)">✨ Decode it</button>
+      </div>
+
+      <div class="example-buttons" role="group" aria-label="Load example messages">
+        <button class="example-btn touch-target" data-example="professor">Example: Professor</button>
+        <button class="example-btn touch-target" data-example="manager">Example: Manager</button>
+        <button class="example-btn touch-target" data-example="group">Example: Group chat</button>
+        <button class="example-btn touch-target" data-example="client">Example: Client</button>
+      </div>
+    </section>
+
+    <!-- Results Screen (hidden initially) -->
+    <section id="results-screen" class="screen" aria-labelledby="results-screen-title" hidden aria-hidden="true" tabindex="-1">
+      <h2 id="results-screen-title">Analysis Results</h2>
+      <button id="back-btn" class="touch-target" aria-label="Back to input" title="Back (Esc)">← Back</button>
+      <button id="read-all-btn" class="touch-target" aria-label="Read all results aloud" title="Read all (R)">🔊 Read all</button>
+
+      <div class="result-section" id="clarity-section" role="region" aria-labelledby="clarity-section-title">
+        <h3 id="clarity-section-title" class="section-title"><span class="section-title-icon">🟢</span>Clarity</h3>
+        <div id="clarity-score" class="clarity-badge" role="status"></div>
+      </div>
+
+      <div class="result-section" id="highlight-section" role="region" aria-labelledby="highlight-section-title">
+        <h3 id="highlight-section-title" class="section-title"><span class="section-title-icon">🔎</span>Highlights</h3>
+        <div id="highlighted-text" class="highlighted-message"></div>
+      </div>
+
+      <div class="result-section" id="missing-section" role="region" aria-labelledby="missing-section-title">
+        <h3 id="missing-section-title" class="section-title"><span class="section-title-icon">⚠️</span>Missing Information</h3>
+        <div id="missing-info"></div>
+      </div>
+
+      <div class="result-section" id="questions-section" role="region" aria-labelledby="questions-section-title">
+        <h3 id="questions-section-title" class="section-title"><span class="section-title-icon">❓</span>Clarifying Questions</h3>
+        <div id="clarifying-questions"></div>
+      </div>
+
+      <div class="result-section" id="messages-section" role="region" aria-labelledby="messages-section-title">
+        <h3 id="messages-section-title" class="section-title"><span class="section-title-icon">💬</span>Message Writer</h3>
+        <div id="message-writer"></div>
+      </div>
+
+      <div class="result-section" id="assumptions-section" role="region" aria-labelledby="assumptions-section-title">
+        <h3 id="assumptions-section-title" class="section-title"><span class="section-title-icon">🧩</span>Safe Assumptions</h3>
+        <div id="safe-assumptions"></div>
+      </div>
+
+      <div class="result-section" id="simplify-section" role="region" aria-labelledby="simplify-section-title">
+        <h3 id="simplify-section-title" class="section-title"><span class="section-title-icon">🛠️</span>Simplify Mode</h3>
+        <div id="simplified-view"></div>
+      </div>
+    </section>
+
+    <!-- Settings Panel (sidebar) -->
+    <aside id="settings-panel" class="side-panel" role="dialog" aria-labelledby="settings-panel-title" hidden aria-hidden="true">
+      <div class="panel-header">
+        <h2 id="settings-panel-title">Settings</h2>
+        <button id="settings-close" class="touch-target" aria-label="Close settings" title="Close (Esc)">✖️</button>
+      </div>
+      <div class="panel-content">
+        <div class="settings-group">
+          <label for="theme-select">Theme</label>
+          <select id="theme-select" class="settings-select" aria-label="Select theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="high-contrast">High contrast</option>
+            <option value="calm">Calm</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label class="settings-checkbox">
+            <input type="checkbox" id="dyslexia-font" /> Dyslexia‑friendly font
+          </label>
+        </div>
+        <div class="settings-group">
+          <label for="font-size">Font size: <span id="font-size-value">100%</span></label>
+          <input type="range" id="font-size" class="settings-range" min="80" max="150" value="100" />
+        </div>
+        <div class="settings-group">
+          <label for="line-spacing">Line spacing: <span id="line-spacing-value">1.6</span></label>
+          <input type="range" id="line-spacing" class="settings-range" min="1" max="2" step="0.1" value="1.6" />
+        </div>
+        <div class="settings-group">
+          <label class="settings-checkbox">
+            <input type="checkbox" id="reduced-motion" /> Reduced motion
+          </label>
+        </div>
+        <div class="settings-group">
+          <label class="settings-checkbox">
+            <input type="checkbox" id="use-ai-toggle" /> Use AI (requires API key)
+          </label>
+          <div id="api-key-group" class="api-key-group" hidden>
+            <label for="api-key-input">OpenAI API key</label>
+            <input type="password" id="api-key-input" class="api-key-input" placeholder="sk-…" autocomplete="off" />
+            <p class="api-key-note">Your key is stored only in this browser's localStorage.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- History Panel (sidebar) -->
+    <aside id="history-panel" class="side-panel" role="dialog" aria-labelledby="history-panel-title" hidden aria-hidden="true">
+      <div class="panel-header">
+        <h2 id="history-panel-title">History</h2>
+        <button id="history-close" class="touch-target" aria-label="Close history" title="Close (Esc)">✖️</button>
+      </div>
+      <div class="panel-content">
+        <div class="history-actions">
+          <button id="export-btn" class="history-action-btn" aria-label="Export history" title="Export (E)">⬇️ Export</button>
+          <button id="import-btn" class="history-action-btn" aria-label="Import history" title="Import (I)">⬆️ Import</button>
+          <button id="clear-history-btn" class="history-action-btn danger" aria-label="Clear all history" title="Clear (Del)">🗑️ Clear All</button>
+        </div>
+        <div id="history-list" class="history-list" role="list"></div>
+        <span id="history-badge" class="badge" hidden aria-live="polite"></span>
+      </div>
+    </aside>
+
+    <!-- Overlay used for side panels -->
+    <div id="panel-overlay" class="panel-overlay" hidden aria-hidden="true"></div>
+
+    <!-- ARIA live region for announcements -->
+    <div id="sr-announcer" class="sr-announcer" aria-live="assertive" aria-atomic="true" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);"></div>
+  </main>
+
+  <footer class="app-footer" role="contentinfo">
+    <p>Built with Antigravity. Live demo link coming soon.</p>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
