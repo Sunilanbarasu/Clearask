@@ -4,7 +4,8 @@
 
 🔗 **Live demo:** https://clearask.vercel.app
 
-<img width="955" height="937" alt="image" src="https://github.com/user-attachments/assets/4e3be5bc-2cc7-41b9-a8d4-ac4c10c735a6"
+<img width="956" height="940" alt="image" src="https://github.com/user-attachments/assets/7ce2d2b0-4f73-477d-b355-737f9eaa679b" />
+
 
 ---
 
@@ -43,10 +44,8 @@ Paste a confusing message and ClearAsk gives you:
 5. **A safe-assumptions plan** so you can start working if nobody replies.
 6. **Simplify mode**, which rewrites the message in plain English with the original beside it.
 
-<p align="center">
-  <img src="<img width="940" height="1020" alt="image" src="https://github.com/user-attachments/assets/90491537-2f89-4403-801b-0c6db812e32e" />
-" alt="Results: clarity label, highlighted vague words with underline and icons, and the missing-information checklist" width="700">
-</p>
+<img width="940" height="1020" alt="image" src="https://github.com/user-attachments/assets/5516facb-d2bb-49ea-abbe-4e0970a7d0b2" />
+
 
 ## Accessibility
 
