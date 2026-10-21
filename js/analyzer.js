@@ -64,7 +64,7 @@ const INFO_CHECKS = [
   {
     id: "criteria",
     label: "Grading or success criteria",
-    icon: "✅",
+    icon: "🎓",
     patterns: [
       /\b(?:rubric|graded?|marks?|points?|criteria|scoring|evaluated?|assessed?|rating)\b/i,
       /\b(?:will\s+be\s+judged|passing|expectations?|standards?|requirements?|objectives?)\b/i,
@@ -205,6 +205,54 @@ function findVagueWords(text) {
   return matches;
 }
 
+/* ── Deadline checker ─────────────────────────────────────── */
+
+function checkDeadline(text) {
+  const months = "jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)";
+
+  // 1. Explicit dates (e.g., "24 October", "October 24", "10/24", "10-24")
+  const explicitDatePatterns = [
+    new RegExp(`\\b\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:${months})\\b`, "i"),
+    new RegExp(`\\b(?:${months})\\s+\\d{1,2}(?:st|nd|rd|th)?\\b`, "i"),
+    /\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b/,
+  ];
+
+  for (const pattern of explicitDatePatterns) {
+    const m = text.match(pattern);
+    if (m) {
+      const after = text.slice(m.index + m[0].length);
+      if (/^\s*(?:-ish|\b(?:ish|or\s+so|sometime|around)\b)/i.test(after)) {
+        continue;
+      }
+      return { found: true, detail: m[0] };
+    }
+  }
+
+  // Weekday or month directly followed by -ish, ish, or so, sometime, or around
+  const vagueFollowed = new RegExp(
+    `\\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|${months})(?:-ish|\\s+(?:ish|or\\s+so|sometime|around))\\b`,
+    "i"
+  );
+
+  // 2. Clear day plus a time
+  const dayStr = `(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today|tonight)`;
+  const timeStr = `(?:(?:at\\s+)?\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)|\\d{1,2}:\\d{2}\\s*(?:am|pm)?|noon|midnight|(?:in\\s+the\\s+)?(?:morning|afternoon|evening)|end\\s+of\\s+(?:the\\s+)?day)`;
+
+  const dayAndTime = new RegExp(
+    `\\b(?:(?:due|by|before|until|on)\\s+)?(${dayStr})\\b(?:[^.,;!?]{1,30}?)\\b(${timeStr})\\b|\\b(?:(?:due|by|before|until|at)\\s+)?(${timeStr})\\b(?:[^.,;!?]{1,30}?)\\b(?:on\\s+)?(${dayStr})\\b`,
+    "i"
+  );
+
+  const dtMatch = text.match(dayAndTime);
+  if (dtMatch) {
+    if (!vagueFollowed.test(dtMatch[0])) {
+      return { found: true, detail: dtMatch[0].trim() };
+    }
+  }
+
+  return { found: false, detail: "" };
+}
+
 /* ── Missing-info checker ─────────────────────────────────── */
 
 /**
@@ -213,6 +261,17 @@ function findVagueWords(text) {
  */
 function checkMissingInfo(text, senderType) {
   return INFO_CHECKS.map((check) => {
+    if (check.id === "deadline") {
+      const deadlineRes = checkDeadline(text);
+      return {
+        id: check.id,
+        label: check.label,
+        icon: check.icon,
+        found: deadlineRes.found,
+        detail: deadlineRes.detail,
+      };
+    }
+
     let found = false;
     let detail = "";
 

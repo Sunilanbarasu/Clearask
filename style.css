@@ -1295,6 +1295,28 @@ body {
   line-height: 1.7;
 }
 
+/* ── AI Analysis Banner ──────────────────────────────────── */
+
+.ai-banner {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.ai-banner.ai-success {
+  background: #e6f9e6;
+  color: #1a7a1a;
+  border: 1px solid #9ae69a;
+}
+
+.ai-banner.ai-fallback {
+  background: #fff8e6;
+  color: #7a5a00;
+  border: 1px solid #e6d080;
+}
+
 /* ── Side Panels (Settings & History) ─────────────────────── */
 
 .panel-overlay {

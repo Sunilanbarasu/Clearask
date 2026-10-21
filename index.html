@@ -58,6 +58,8 @@
       <button id="back-btn" class="touch-target" aria-label="Back to input" title="Back (Esc)">← Back</button>
       <button id="read-all-btn" class="touch-target" aria-label="Read all results aloud" title="Read all (R)">🔊 Read all</button>
 
+      <div id="ai-banner" class="ai-banner" role="status" hidden></div>
+
       <div class="result-section" id="clarity-section" role="region" aria-labelledby="clarity-section-title">
         <h3 id="clarity-section-title" class="section-title"><span class="section-title-icon">🟢</span>Clarity</h3>
         <div id="clarity-score" class="clarity-badge" role="status"></div>
@@ -128,7 +130,7 @@
             <input type="checkbox" id="reduced-motion" /> Reduced motion
           </label>
         </div>
-        <div class="settings-group">
+        <div class="settings-group" hidden>
           <label class="settings-checkbox">
             <input type="checkbox" id="use-ai-toggle" /> Use AI (requires API key)
           </label>

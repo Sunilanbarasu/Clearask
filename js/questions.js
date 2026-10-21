@@ -59,7 +59,7 @@ const QUESTION_TEMPLATES = {
 const VAGUE_FOLLOW_UPS = {
   time: {
     text: `Could you share a specific date or time for the deadline?`,
-    whyItMatters: `Words like "soon" or "ASAP" create anxiety without clarity. A concrete time lets you plan.`,
+    whyItMatters: `A specific date and time removes the guesswork and lets you plan.`,
     priority: 1,
   },
   quantity: {
@@ -103,22 +103,35 @@ export function generateQuestions(analysis) {
     filler: `filler`,
   };
 
+  const timeMatch = (analysis.vagueMatches || []).find((m) => m.category === "time");
+  const timeWord = timeMatch?.word;
+
+  function getDeadlineWhy(defaultWhy) {
+    if (timeWord) {
+      return `A phrase like "${timeWord}" leaves the timing open to interpretation. A specific date and time removes the guesswork.`;
+    }
+    return (
+      defaultWhy ||
+      `Without a deadline, you might rush unnecessarily or deliver too late. A specific date and time removes the guesswork.`
+    );
+  }
+
   // 1. Questions for missing information (one per missing item)
-  for (const item of (analysis.missingInfo || [])) {
+  for (const item of analysis.missingInfo || []) {
     if (!item.found && QUESTION_TEMPLATES[item.id] && !seenItems.has(item.id)) {
       seenItems.add(item.id);
       const tmpl = QUESTION_TEMPLATES[item.id];
       questions.push({
         id: item.id,
         text: tmpl.friendly,
-        whyItMatters: tmpl.whyItMatters,
+        whyItMatters: item.id === "deadline" ? getDeadlineWhy(tmpl.whyItMatters) : tmpl.whyItMatters,
         priority: tmpl.priority,
       });
     }
   }
 
   // 2. Questions for vague-word categories (never duplicate a missing item question)
-  for (const match of (analysis.vagueMatches || [])) {
+  for (const match of analysis.vagueMatches || []) {
     const itemKey = CATEGORY_TO_ITEM[match.category] || match.category;
     if (!seenItems.has(itemKey) && VAGUE_FOLLOW_UPS[match.category]) {
       seenItems.add(itemKey);
@@ -126,7 +139,7 @@ export function generateQuestions(analysis) {
       questions.push({
         id: itemKey,
         text: tmpl.text,
-        whyItMatters: tmpl.whyItMatters,
+        whyItMatters: match.category === "time" ? getDeadlineWhy(tmpl.whyItMatters) : tmpl.whyItMatters,
         priority: tmpl.priority,
       });
     }

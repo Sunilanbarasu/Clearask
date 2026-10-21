@@ -94,8 +94,22 @@ export function generateSafeAssumptions(analysis) {
 
   const assumptions = [];
 
-  for (const item of analysis.missingInfo) {
+  const deadlineMissing = (analysis.missingInfo || []).some(
+    (item) => item.id === "deadline" && !item.found
+  );
+
+  if (deadlineMissing) {
+    assumptions.push({
+      item: "Deadline",
+      assumption: "Deadline: assume 2 working days from now and mention it in your message.",
+    });
+  }
+
+  for (const item of (analysis.missingInfo || [])) {
     if (!item.found) {
+      if (item.id === "deadline" && deadlineMissing) {
+        continue;
+      }
       assumptions.push({
         item: item.label,
         assumption: getDefaultAssumption(item.id, analysis.senderType),

@@ -86,15 +86,27 @@ export const VAGUE_WORDS = [
     ],
   },
   {
-    pattern: /\bwhen(?:ever)?\s+you\s+(?:can|get\s+(?:a\s+)?chance)\b/gi,
+    pattern: /\bwhen(?:ever)?\s+you\s+can\b/gi,
     label: "when you can",
     icon: "⏰",
     category: "time",
     explanation:
-      'This sounds flexible, but the sender might secretly have a deadline in mind.',
+      `This sounds flexible, but the sender might secretly have a deadline in mind.`,
     interpretations: [
       "No real urgency — fit it in this week",
-      "I'm being polite but I actually need it today",
+      `I'm being polite but I actually need it today`,
+    ],
+  },
+  {
+    pattern: /\bwhen(?:ever)?\s+you\s+get\s+(?:a\s+)?chance\b/gi,
+    label: "when you get a chance",
+    icon: "⏰",
+    category: "time",
+    explanation:
+      `This sounds casual and low-pressure, but it often masks an unspoken priority.`,
+    interpretations: [
+      "No immediate rush — fit it in when free",
+      `As soon as possible, but phrasing it gently`,
     ],
   },
   {
@@ -131,6 +143,90 @@ export const VAGUE_WORDS = [
     interpretations: [
       "Within the next 1–2 weeks",
       "Within the next month or so",
+    ],
+  },
+  {
+    pattern: /\bwhenever\b/gi,
+    label: "whenever",
+    icon: "⏰",
+    category: "time",
+    explanation:
+      `"Whenever" sounds open-ended but the sender might still expect it relatively soon.`,
+    interpretations: [
+      "At any time that works for you — genuinely flexible",
+      "Soon-ish — the sender is being polite but does have a window in mind",
+    ],
+  },
+  {
+    pattern: /\bwhatever\b/gi,
+    label: "whatever",
+    icon: "🤷",
+    category: "hedging",
+    explanation:
+      `"Whatever" can signal genuine flexibility or frustration — hard to tell which.`,
+    interpretations: [
+      "Truly open — any option is fine",
+      `The sender has a preference but doesn't want to say it outright`,
+    ],
+  },
+  {
+    pattern: /\bsometime\b/gi,
+    label: "sometime",
+    icon: "⏰",
+    category: "time",
+    explanation:
+      `"Sometime" gives no time frame — it could be today or next month.`,
+    interpretations: [
+      "Within the next few days",
+      "At an unspecified future date — low urgency",
+    ],
+  },
+  {
+    pattern: /\bsomeday\b/gi,
+    label: "someday",
+    icon: "⏰",
+    category: "time",
+    explanation:
+      `"Someday" implies no urgency at all, but the sender might still expect action.`,
+    interpretations: [
+      `Eventually — no rush, but don't forget`,
+      "The sender wishes for this but has no timeline",
+    ],
+  },
+  {
+    pattern: /\bor\s+so\b/gi,
+    label: "or so",
+    icon: "📏",
+    category: "quantity",
+    explanation:
+      `"Or so" softens any number it follows, making it approximate rather than firm.`,
+    interpretations: [
+      "Roughly that number — a little above or below is fine",
+      "The sender picked a number but really means a range",
+    ],
+  },
+  {
+    pattern: /\b\w+-?ish\b/gi,
+    label: "-ish",
+    icon: "🤷",
+    category: "hedging",
+    explanation:
+      `The "-ish" suffix deliberately removes precision — the speaker is hedging.`,
+    interpretations: [
+      "Approximately that — close but not exact",
+      "The speaker wants flexibility and may shift the target",
+    ],
+  },
+  {
+    pattern: /\ba\s+bit\b/gi,
+    label: "a bit",
+    icon: "📏",
+    category: "quantity",
+    explanation:
+      `"A bit" is intentionally vague about how much — it could be a tiny amount or a moderate one.`,
+    interpretations: [
+      "A small amount — a minor tweak",
+      "A noticeable amount — more than trivial",
     ],
   },
 
@@ -427,7 +523,7 @@ export const VAGUE_WORDS = [
     icon: "🤷",
     category: "hedging",
     explanation:
-      '"Kind of" weakens whatever follows it — the sender isn\'t fully committing to the statement.',
+      `"Kind of" weakens whatever follows it — the sender isn't fully committing to the statement.`,
     interpretations: [
       "Somewhat — partially true but with caveats",
       "Actually yes, but the speaker is softening the message",

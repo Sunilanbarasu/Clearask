@@ -110,6 +110,9 @@ function handleDecode() {
   const senderType = $("#sender-type").value;
   const settings = getSettings();
 
+  // AI feature is currently hidden — force off so old saved settings can't trigger it
+  settings.useAI = false;
+
   // Check if AI mode is enabled
   if (settings.useAI && getApiKey()) {
     runAIAnalysis(text, senderType);
@@ -126,6 +129,14 @@ function runRuleAnalysis(text, senderType) {
   currentMessages = generateMessages(currentAnalysis, currentQuestions);
   currentAssumptions = generateSafeAssumptions(currentAnalysis);
 
+  // Hide AI banner for rule-based analysis
+  const banner = $("#ai-banner");
+  if (banner) {
+    banner.hidden = true;
+    banner.className = "ai-banner";
+    banner.textContent = "";
+  }
+
   saveAnalysis(currentAnalysis);
   updateHistoryBadge();
   renderResults();
@@ -134,6 +145,14 @@ function runRuleAnalysis(text, senderType) {
 }
 
 /* ── AI Analysis (optional) ───────────────────────────────── */
+
+function showAIBanner(type, message) {
+  const banner = $("#ai-banner");
+  if (!banner) return;
+  banner.hidden = false;
+  banner.className = `ai-banner ${type === "success" ? "ai-success" : "ai-fallback"}`;
+  banner.textContent = message;
+}
 
 async function runAIAnalysis(text, senderType) {
   const apiKey = getApiKey();
@@ -154,6 +173,8 @@ async function runAIAnalysis(text, senderType) {
           {
             role: "system",
             content: `You are an assistant that helps people decode vague instructions. Analyze the following message and return a JSON object with these fields:
+- vagueWords: array of {word, label, explanation, interpretations} where interpretations is an array of strings
+- missingInfo: array of {label, icon, found, suggestion} where found is boolean
 - simplifiedText: a plain-English rewrite of the message
 - clarifyingQuestions: array of {text, whyItMatters} (3-5 polite questions)
 - safeAssumptions: array of {item, assumption} (sensible defaults)
@@ -169,12 +190,24 @@ Be warm and supportive. Never judge the user for not understanding.`,
       }),
     });
 
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      throw new Error(`API error ${response.status}: ${errorBody}`);
+    }
+
     const data = await response.json();
-    const aiResult = JSON.parse(data.choices[0].message.content);
+    const raw = data.choices[0].message.content;
+
+    let aiResult;
+    try {
+      aiResult = JSON.parse(raw);
+    } catch (parseErr) {
+      throw new Error(`AI returned invalid JSON: ${parseErr.message}`);
+    }
 
     // Still run rule-based analysis for highlights and missing info
     currentAnalysis = analyze(text, senderType);
+
     currentQuestions = aiResult.clarifyingQuestions?.map((q, i) => ({
       text: q.text,
       whyItMatters: q.whyItMatters,
@@ -198,16 +231,22 @@ Be warm and supportive. Never judge the user for not understanding.`,
     updateHistoryBadge();
     renderResults();
     showScreen("results");
+
+    showAIBanner("success", "✨ Analyzed with AI");
     announceToScreenReader("AI analysis complete. Results are now showing.");
   } catch (err) {
-    console.warn("AI analysis failed, falling back to rules:", err);
+    console.error("AI analysis failed:", err);
+    showAIBanner("fallback", `AI failed (reason: ${err.message}), showing rule-based results`);
     announceToScreenReader("AI analysis failed. Using rule-based analysis instead.");
     runRuleAnalysis(text, senderType);
+    // Keep the fallback banner visible (runRuleAnalysis hides it, so re-show)
+    showAIBanner("fallback", `AI failed (reason: ${err.message}), showing rule-based results`);
   } finally {
     decodeBtn.disabled = false;
     decodeBtn.innerHTML = '✨ Decode it';
   }
 }
+
 
 /* ── Voice Input ──────────────────────────────────────────── */
 
@@ -381,6 +420,10 @@ function renderMissingInfo() {
     const statusClass = item.found ? "found" : "missing";
     const statusIcon = item.found ? "✅" : "❌";
     const statusLabel = item.found ? "Found" : "Missing";
+    const icon =
+      item.id === "criteria" || item.label?.toLowerCase().includes("criteria")
+        ? "🎓"
+        : item.icon;
     const detail = item.found && item.detail
       ? ` <span class="found-detail">(found: "${item.detail}")</span>`
       : "";
@@ -388,7 +431,7 @@ function renderMissingInfo() {
     html += `
       <li class="info-item info-${statusClass}" role="listitem">
         <span class="info-status" aria-label="${statusLabel}">${statusIcon}</span>
-        <span class="info-icon" aria-hidden="true">${item.icon}</span>
+        <span class="info-icon" aria-hidden="true">${icon}</span>
         <span class="info-label">${item.label}</span>
         ${detail}
       </li>
@@ -539,10 +582,13 @@ function renderAssumptions() {
   html += '<ul class="assumptions-list" role="list">';
 
   for (const a of currentAssumptions.assumptions) {
+    const val = a.assumption.startsWith(`${a.item}: `)
+      ? a.assumption.slice(`${a.item}: `.length)
+      : a.assumption;
     html += `
       <li class="assumption-item">
         <span class="assumption-label">${a.item}:</span>
-        <span class="assumption-value">${a.assumption}</span>
+        <span class="assumption-value">${val}</span>
       </li>
     `;
   }
@@ -669,6 +715,8 @@ function bindSettingsPanel() {
 
   // Open
   $("#settings-btn").addEventListener("click", () => {
+    panel.hidden = false;
+    panel.setAttribute("aria-hidden", "false");
     panel.classList.add("open");
     overlay.classList.add("open");
     overlay.hidden = false;
@@ -679,6 +727,8 @@ function bindSettingsPanel() {
   // Close
   const closeSettings = () => {
     panel.classList.remove("open");
+    panel.hidden = true;
+    panel.setAttribute("aria-hidden", "true");
     overlay.classList.remove("open");
     overlay.hidden = true;
     document.body.classList.remove("panel-open");
@@ -774,6 +824,8 @@ function bindHistoryPanel() {
   // Open
   $("#history-btn").addEventListener("click", () => {
     renderHistoryList();
+    panel.hidden = false;
+    panel.setAttribute("aria-hidden", "false");
     panel.classList.add("open");
     overlay.classList.add("open");
     overlay.hidden = false;
@@ -784,6 +836,8 @@ function bindHistoryPanel() {
   // Close
   const closeHistory = () => {
     panel.classList.remove("open");
+    panel.hidden = true;
+    panel.setAttribute("aria-hidden", "true");
     overlay.classList.remove("open");
     overlay.hidden = true;
     document.body.classList.remove("panel-open");
@@ -927,6 +981,8 @@ function bindKeyboard() {
 
       if (settingsPanel.classList.contains("open")) {
         settingsPanel.classList.remove("open");
+        settingsPanel.hidden = true;
+        settingsPanel.setAttribute("aria-hidden", "true");
         overlay.classList.remove("open");
         overlay.hidden = true;
         document.body.classList.remove("panel-open");
@@ -934,6 +990,8 @@ function bindKeyboard() {
       }
       if (historyPanel.classList.contains("open")) {
         historyPanel.classList.remove("open");
+        historyPanel.hidden = true;
+        historyPanel.setAttribute("aria-hidden", "true");
         overlay.classList.remove("open");
         overlay.hidden = true;
         document.body.classList.remove("panel-open");
